@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "hyperzone": "./bin/hyperzone"
+  },
   "scripts": {
     "test": "echo \"Error: no tests yet\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@hyperswarm/replicator": "github:lukeburns/replicator",
     "bns": "^0.15.0",
     "bs32": "^0.1.6",
     "hypertrie": "^5.1.2",

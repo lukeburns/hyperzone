@@ -10,13 +10,13 @@ const digest = require('./digest')
 // - make Replicable: Replicator.add(zone) rather than Replicator.add(zone.db)
 
 class Hyperzone {
-  constructor (name, storage, key, opts) {
+  constructor (name, storage, key, opts = {}) {
     // super(...args)
     if (isOptions(key)) {
       opts = key
       key = null
     }
-    if (key.length === 52) {
+    if (key && key.length === 52) {
       key = base32.decode(key)
     }
     this.name = name

@@ -21,7 +21,7 @@ function digest (name, key, flags = 257, protocol = 3, algorithm = 15) {
 
 // compute digest from ed25519 example in rfc8080
 // https://datatracker.ietf.org/doc/html/rfc8080#section-6.1
-test_example_digest()
+// test_example_digest()
 function test_example_digest () {
   const expected_digest = '3aa5ab37efce57f737fc1627013fee07bdf241bd10f3b1964ab55c78e79a304b'
   const name = 'example.com.'
