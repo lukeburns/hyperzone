@@ -13,9 +13,11 @@
   "license": "ISC",
   "dependencies": {
     "@hyperswarm/replicator": "github:lukeburns/replicator",
-    "bns": "^0.15.0",
     "bs32": "^0.1.6",
     "hypertrie": "^5.1.2",
     "is-options": "^1.0.2"
+  },
+  "peerDependencies": {
+    "bns": "^0.15.0"
   }
 }
