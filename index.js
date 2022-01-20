@@ -1,7 +1,7 @@
 const hypertrie = require('hypertrie')
 const isOptions = require('is-options')
 const base32 = require('bs32')
-const { Zone, wire: { types } } = require('bns')
+const { Zone, wire: { types, typesByVal } } = require('bns')
 const digest = require('./digest')
 
 // TODO:
@@ -46,6 +46,9 @@ class Hyperzone {
   }
 
   resolve (name, type) {
+    if (typeof type === 'number') {
+      type = typesByVal[type]
+    }
     const zone = new Zone()
     zone.setOrigin(this.name)
     return new Promise((resolve, reject) => {
@@ -55,7 +58,7 @@ class Hyperzone {
           zone.fromString(data.value.toString())
         })
         .on('end', _ => {
-          resolve(zone.resolve(name, typeof type === 'number' ? type : types[type]))
+          resolve(zone.resolve(name, types[type]))
         })
     })
   }
