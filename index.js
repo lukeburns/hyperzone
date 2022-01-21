@@ -20,7 +20,7 @@ class Hyperzone {
       key = base32.decode(key)
     }
     this.name = name
-    this.db = hypertrie(storage, key, { ...opts, alwaysUpdate: true })
+    this.db = hypertrie(storage, key, { ...opts })
     this.isReady = false
     this.db.on('ready', () => {
       this.isReady = true
