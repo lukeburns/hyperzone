@@ -5,25 +5,28 @@ const isOptions = require('is-options')
 const base32 = require('bs32')
 const { algs } = require('bns/lib/constants')
 const dnssec = require('bns/lib/dnssec')
-const { Zone, wire } = require('bns')
+const { Zone, wire, util } = require('bns')
 const { types, typesByVal } = wire
 
 class Hyperzone extends EventEmitter {
-  constructor (origin, storage, key, opts = {}) {
+  constructor (storage, key, opts = {}) {
     super()
-    if (isOptions(key)) {
+    if (isOptions(storage) && (storage.storage || storage.origin)) {
+      opts = storage
+      storage = opts.storage || opts.origin
+    } else if (isOptions(key)) {
       opts = key
       key = null
     }
+
     if (key && key.length === 52) {
       key = base32.decode(key)
     }
-    this.origin = origin
-    this.db = hypertrie(storage || origin, key, { ...opts })
+
+    this._origin = opts.origin ? util.fqdn(opts.origin) : null
+    this.db = hypertrie(storage, key, opts)
     this.isReady = false
-    this.db.ready(() => {
-      this.db.get('DNSKEY/0', this.initialize.bind(this))
-    })
+    this.db.ready(this.initialize.bind(this))
   }
 
   ready () {
@@ -36,7 +39,49 @@ class Hyperzone extends EventEmitter {
     })
   }
 
-  initialize (error, record) {
+  async initialize () {
+    const origin = await this.origin()
+
+    if (origin) {
+      if (!this._origin) {
+        this._origin = origin
+      } else {
+        if (origin !== this._origin) {
+          throw new Error('Origin mismatch')
+        }
+      }
+    } else {
+      if (this._origin && this.db.feed.writable) {
+        await new Promise((resolve, reject) => {
+          this.db.put('ORIGIN', this._origin, (error, entry) => {
+            if (!error) {
+              resolve(entry)
+            } else {
+              reject(error)
+            }
+          })
+        })
+      } else {
+        if (this.db.feed.writable) {
+          throw new Error('Origin required')
+        } else {
+          await this.origin()
+        }
+      }
+    }
+
+    if (this._origin) {
+      this.db.get('DNSKEY/0', this.handlednskey.bind(this))
+    } else {
+      const watcher = this.db.watch('ORIGIN', async () => {
+        this._origin = await this.origin()
+        this.db.get('DNSKEY/0', this.handlednskey.bind(this))
+        watcher.destroy()
+      })
+    }
+  }
+
+  handlednskey (error, record) {
     if (error) {
       throw error
     }
@@ -48,7 +93,7 @@ class Hyperzone extends EventEmitter {
       const pub = this.db.key
       const alg = algs.ED25519
 
-      const keyRecord = dnssec.createKey(this.origin, alg, pub, flags)
+      const keyRecord = dnssec.createKey(this._origin, alg, pub, flags)
       const text = this.toText(keyRecord)
       this.db.put('DNSKEY/0', text, (error) => {
         if (!error) {
@@ -70,6 +115,18 @@ class Hyperzone extends EventEmitter {
 
   get priv () {
     return this.db.secretKey.slice(0, 32)
+  }
+
+  origin () {
+    return new Promise((resolve, reject) => {
+      this.db.get('ORIGIN', (error, entry) => {
+        if (!error && entry) {
+          resolve(entry.value.toString())
+        } else {
+          resolve(null)
+        }
+      })
+    })
   }
 
   key () {
@@ -96,8 +153,6 @@ class Hyperzone extends EventEmitter {
     })
   }
 
-  // todo: index by unique id for the record set
-  // is a signature invalidated if i remove only one covered record?
   put (text, lifespan=null) {
     if (this.db.feed.writable) {
       let rrs = this.fromText(dedent(text.trim()))
@@ -122,13 +177,6 @@ class Hyperzone extends EventEmitter {
               value
             }
           })
-
-          // resolve(await Promise.all(batch.map(({ key, value }) => {
-          //   return new Promise((resolve, reject) => {
-          //     // console.log(key, value)
-          //     this.db.put(key, value, resolve)
-          //   })
-          // })))
 
           this.db.batch(batch, error => {
             if (!error) {
@@ -192,7 +240,7 @@ class Hyperzone extends EventEmitter {
       type = typesByVal[type]
     }
     const zone = new Zone()
-    zone.setOrigin(origin || this.origin)
+    zone.setOrigin(origin || this._origin)
     return new Promise((resolve, reject) => {
       this.db.createReadStream(type)
         .on('error', reject)
@@ -206,7 +254,7 @@ class Hyperzone extends EventEmitter {
   }
 
   fromText (text, origin) {
-    return Hyperzone.fromText(text, origin || this.origin)
+    return Hyperzone.fromText(text, origin || this._origin)
   }
 
   toText (rrs) {

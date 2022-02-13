@@ -1,5 +1,5 @@
+const Hyperzone = require('./hyperzone')
 const ram = require('random-access-memory')
-const Hyperzone = require('./index')
 
 main()
 async function main() {
