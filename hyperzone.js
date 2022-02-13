@@ -19,8 +19,14 @@ class Hyperzone extends EventEmitter {
       key = null
     }
 
-    if (key && key.length === 52) {
-      key = base32.decode(key)
+    if (key && typeof key === 'string') {
+      if (key.length === 52) {
+        key = base32.decode(key)
+      } else if (key.length < 52) {
+        key = Buffer.from(key, 'base64')
+      } else if (key.length === 64) {
+        key = Buffer.from(key, 'hex')
+      }
     }
 
     if (opts.origin) {
@@ -206,7 +212,7 @@ class Hyperzone extends EventEmitter {
         this.db.createReadStream(key)
           .on('error', reject)
           .on('data', ({ key }) => {
-            batch.push({
+            key.indexOf('ORIGIN') < 0 && key.indexOf('DNSKEY') < 0 && batch.push({
               type: 'del',
               key
             })
