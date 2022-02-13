@@ -1,6 +1,10 @@
 const DNSServer = require('bns/lib/server/dns')
 const Hyperzone = require('./hyperzone')
 
+// todo: 
+// - dynamically setOrigin
+// - replicate over DHT
+
 class AuthServer extends DNSServer {
   constructor (options) {
     super(options)

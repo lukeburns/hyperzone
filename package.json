@@ -1,13 +1,13 @@
 {
   "name": "hyperzone",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "",
   "main": "index.js",
   "bin": {
     "hyperzone": "./bin/hyperzone"
   },
   "scripts": {
-    "test": "echo \"Error: no tests yet\" && exit 1"
+    "test": "node test.js"
   },
   "author": "",
   "license": "ISC",
@@ -22,6 +22,11 @@
     "bns": "^0.15.0"
   },
   "devDependencies": {
+    "brittle": "^2.0.3",
     "random-access-memory": "^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lukeburns/hyperzone.git"
   }
 }

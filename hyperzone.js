@@ -13,7 +13,7 @@ class Hyperzone extends EventEmitter {
     super()
     if (isOptions(storage) && (storage.storage || storage.origin)) {
       opts = storage
-      storage = opts.storage || opts.origin
+      storage = opts.storage || (opts.origin ? util.fqdn(opts.origin) : null)
     } else if (isOptions(key)) {
       opts = key
       key = null
@@ -24,7 +24,7 @@ class Hyperzone extends EventEmitter {
     }
 
     if (opts.origin) {
-      this._origin = opts.origin
+      this._origin = util.fqdn(opts.origin)
     } else if (typeof storage === 'string' && util.isFQDN(storage)) {
       this._origin = storage
     }
@@ -170,7 +170,7 @@ class Hyperzone extends EventEmitter {
           let batchKey
           const index = this.db.feed.length-1
           const batch = rrs.map((rr, i) => {
-            const value = this.toText(rr)
+            const value = this.toText(rr).trim()
             const rrsigType = rr.type === types.RRSIG ? typesByVal[rr.data.typeCovered] : ''
             const type = rrsigType ? rrsigType : typesByVal[rr.type]
 
