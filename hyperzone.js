@@ -23,7 +23,12 @@ class Hyperzone extends EventEmitter {
       key = base32.decode(key)
     }
 
-    this._origin = opts.origin ? util.fqdn(opts.origin) : null
+    if (opts.origin) {
+      this._origin = opts.origin
+    } else if (typeof storage === 'string' && util.isFQDN(storage)) {
+      this._origin = storage
+    }
+
     this.db = hypertrie(storage, key, opts)
     this.isReady = false
     this.db.ready(this.initialize.bind(this))
