@@ -1,41 +1,47 @@
 const HOME = require('os').homedir()
 
+const prettyHash = require('pretty-hash')
 const Hyperzone = require('../hyperzone')
 const AuthServer = require('../auth')
 const Replicator = require('@hyperswarm/replicator')
 const ram = require('random-access-memory')
 
-const key = process.argv[2]
-if (!key) throw new Error('Missing key')
-
-const storage = process.argv[3] === '-ram' ? ram : `${HOME}/.hyperzones/r/${key}`
+const keys = process.argv.slice(2)
+if (!keys.length) throw new Error('No keys specified')
 
 main()
 
 async function main () {
   const auth = new AuthServer()
-  auth.setOrigin(storage, key, { sparse: true, alwaysUpdate: true })
 
-  const local = auth.zone
-  auth.replicator = new Replicator()
-  auth.replicator.add(local.db, { client: true, server: true })
-  auth.replicator.on('connection', () => console.log('> connection'))
+  const replicator = new Replicator()
+  replicator.on('connection', () => console.log('> connection'))
 
-  let origin = await local.origin()
-  origin || console.log('searching for origin...')
-  await local.ready()
-  origin || console.log('found origin!')
-  console.log('---')
-  console.log('origin:', await local.origin())
-  console.log('public key:', local.pub)
-  console.log('storage:', storage === ram ? 'in-memory' : storage)
+  await Promise.all(keys.map(async (key, i) => {
+    const storage = keys[i+1] === '-ram' ? ram : `${HOME}/.hyperzones/r/${key}`
+    const zone = auth.add(storage, key, { sparse: true, alwaysUpdate: true })
+    pkey = prettyHash(key)
+    replicator.add(zone.db, { client: true, server: true })
 
-  let port = 53
-  try {
-    auth.bind(port, '0.0.0.0')
-  } catch (e) {
-    port = 5300
-    auth.bind(port, '127.0.0.1')
-  }
+    try {
+      let origin = await zone.origin()
+      origin || console.log(`[${pkey}] searching for origin...`)
+
+      await zone.ready()
+      origin = await zone.origin()
+
+      console.log(`[${origin}] found origin!`)
+      console.log('---')
+      console.log(`[${origin}] public key:`, zone.pub)
+      console.log(`[${origin}] storage:`, storage === ram ? 'in-memory' : storage)
+      console.log('---')
+      console.log('---')
+    } catch (error) {
+      console.error(error)
+    }
+  }))
+ 
+  let port = 5333
+  auth.bind(port, '66.42.108.201')
   console.log('authoritative server listening on port', port)
 }
