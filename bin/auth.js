@@ -17,7 +17,7 @@ async function main () {
   const replicator = new Replicator()
   replicator.on('connection', () => console.log('> connection'))
 
-  await Promise.all(keys.map(async (key, i) => {
+  keys.map(async (key, i) => {
     const storage = keys[i+1] === '-ram' ? ram : `${HOME}/.hyperzones/r/${key}`
     const zone = auth.add(storage, key, { sparse: true, alwaysUpdate: true })
     pkey = prettyHash(key)
@@ -39,9 +39,9 @@ async function main () {
     } catch (error) {
       console.error(error)
     }
-  }))
+  })
  
-  let port = 5333
+  let port = 53
   auth.bind(port, '66.42.108.201')
   console.log('authoritative server listening on port', port)
 }
