@@ -1,18 +1,20 @@
 const HOME = require('os').homedir()
 
-const Hyperzone = require('../hyperzone')
+const Hyperzone = require('../index')
 const Replicator = require('@hyperswarm/replicator')
 const ram = require('random-access-memory')
 const { util } = require('bns')
 
 const origin = util.fqdn(((process.argv[2] !== '-ram' && process.argv[2]) ? process.argv[2] : null) || 'example')
+const secretKey = (process.argv[3] && proces.argv[3].length > 4) ? Buffer.from(process.argv[3], 'hex') : undefined
+const publicKey = secretKey ? secretKey.slice(32) : undefined
 const storage = (process.argv[2] === '-ram' || process.argv[3] === '-ram') ? ram : `${HOME}/.hyperzones/w/${origin}`
 
 main()
 
 async function main() {
   const replicator = new Replicator()
-  const zone = new Hyperzone(storage, { origin })
+  const zone = new Hyperzone(storage, publicKey, { origin, secretKey })
   await zone.ready()
   console.log('origin:', await zone.origin())
   console.log('public key:', zone.pub)

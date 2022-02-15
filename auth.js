@@ -1,6 +1,6 @@
 const { Zone } = require('bns')
 const DNSServer = require('bns/lib/server/dns')
-const Hyperzone = require('./hyperzone')
+const Hyperzone = require('./index')
 
 const empty = new Zone()
 
