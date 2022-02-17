@@ -37,6 +37,7 @@ class Hyperzone extends EventEmitter {
 
     this.db = hypertrie(storage, key, opts)
     this.isReady = false
+    this.db.on('error', console.error)
     this.db.ready(this.initialize.bind(this))
   }
 
@@ -68,7 +69,7 @@ class Hyperzone extends EventEmitter {
             if (!error) {
               resolve(entry)
             } else {
-              reject(error)
+              console.error(error)
             }
           })
         })
@@ -256,10 +257,20 @@ class Hyperzone extends EventEmitter {
       this.db.createReadStream(type)
         .on('error', reject)
         .on('data', data => {
-          data.value && zone.fromString(data.value.toString())
+          try {
+            if (data.value) {
+              const value = data.value.toString()
+              zone.fromString(value)
+            }
+          } catch (err) {}
         })
         .on('end', _ => {
-          resolve(zone.resolve(name, types[type]))
+          try {
+            const res = zone.resolve(name, types[type])
+            resolve(res)
+          } catch (err) {
+            reject(err)
+          }
         })
     })
   }
