@@ -5,7 +5,7 @@ const { Zone, wire, dnssec } = require('bns')
 const { SOARecord, Record, codes, types, typesByVal } = wire
 const { RecursiveServer } = require('hipr');
 const Replicator = require('@hyperswarm/replicator')
-const Hyperzone = require('./hyperzone')
+const Hyperzone = require('../')
 
 const empty = new Zone()
 
@@ -51,7 +51,7 @@ server.parseOptions({ dnssec: true })
 
 server.resolver.setStub('149.248.21.56', 53, createDS())
 
-server.resolver.use(':data.:protocol(_hyper|ns.direct).', async ({ protocol, data }, name, type) => {
+server.use(':data.:protocol(_hyper|ns.direct).', async ({ protocol, data }, name, type) => {
   console.log(`${name} ${type}`)
   console.log(`  ${protocol} ${data}`)
 

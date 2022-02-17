@@ -15,7 +15,7 @@
     "@hyperswarm/replicator": "github:lukeburns/replicator",
     "bs32": "^0.1.6",
     "dedent": "^0.7.0",
-    "hipr": "^0.1.0",
+    "hipr": "^0.1.1",
     "hypertrie": "^5.1.2",
     "is-options": "^1.0.2"
   },
