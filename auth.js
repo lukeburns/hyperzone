@@ -4,7 +4,7 @@ const base32 = require('bs32')
 const { wire: { codes, types }, Zone } = require('bns')
 const DNSServer = require('bns/lib/server/dns')
 const Replicator = require('@hyperswarm/replicator')
-const Hyperzone = require('./hyperzone')
+const Hyperzone = require('./index')
 const { merge, root, recursive } = require('./lookup')
 
 const empty = new Zone()

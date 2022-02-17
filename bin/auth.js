@@ -1,7 +1,7 @@
 const HOME = require('os').homedir()
 
 const prettyHash = require('pretty-hash')
-const Hyperzone = require('../hyperzone')
+const Hyperzone = require('../index')
 const AuthServer = require('../auth')
 const ram = require('random-access-memory')
 
