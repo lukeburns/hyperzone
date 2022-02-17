@@ -1,3 +1,9 @@
+const rootHost = process.argv[2] || '149.248.21.56'
+const rootPort = parseInt(process.argv[3] || '53')
+
+const serverHost = process.argv[4] || '127.0.0.1'
+const serverPort = parseInt(process.argv[5] || '5333')
+
 const HOME = require('os').homedir()
 
 const base32 = require('bs32')
@@ -49,7 +55,7 @@ const server = new RecursiveServer({
 
 server.parseOptions({ dnssec: true })
 
-server.resolver.setStub('149.248.21.56', 53, createDS())
+server.resolver.setStub(rootHost, rootPort, createDS())
 
 server.use(':data.:protocol(_hyper|ns.direct).', async ({ protocol, data }, name, type) => {
   console.log(`${name} ${type}`)
@@ -85,7 +91,8 @@ server.use(':data.:protocol(_hyper|ns.direct).', async ({ protocol, data }, name
 })
 
 server.parseOptions({ dnssec: true })
-server.bind(53, '66.42.108.201')
+server.bind(serverPort, serverHost)
+console.log(`listening on ${serverHost}:${serverPort}`)
 
 // ---
 
