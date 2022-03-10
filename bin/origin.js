@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const HOME = require('os').homedir()
 
 const Hyperzone = require('../index')

@@ -1,10 +1,10 @@
 {
   "name": "hyperzone",
-  "version": "0.2.1",
+  "version": "0.2.5",
   "description": "",
   "main": "index.js",
   "bin": {
-    "hyperzone": "./bin/origin"
+    "hyperzone": "./bin/origin.js"
   },
   "scripts": {
     "test": "node test.js"
@@ -17,14 +17,14 @@
     "dedent": "^0.7.0",
     "hipr": "^0.1.1",
     "hypertrie": "^5.1.2",
-    "is-options": "^1.0.2"
+    "is-options": "^1.0.2",
+    "random-access-memory": "^4.0.0"
   },
   "peerDependencies": {
     "bns": "^0.15.0"
   },
   "devDependencies": {
-    "brittle": "^2.0.3",
-    "random-access-memory": "^4.0.0"
+    "brittle": "^2.0.3"
   },
   "repository": {
     "type": "git",

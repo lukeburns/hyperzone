@@ -14,22 +14,19 @@ await zone.resolve('example.', 'TXT') // resolve records in your authoritative r
 await zone.del(rskey) // delete record set
 ```
 
-## [HIP-R](https://github.com/lukeburns/hipr) Hyperzone Resolver
+## Client
 
-A recursive resolver that intercepts and claims authority for domains with a hip5 record of the form
-`pubkey._hyper.` or `pubkey.ns.direct.` --- my unstable, experimental fallback hyperzone resolver.
-
-To get started, you must have a local hsd or hnsd node running, with the root nameserver exposed. For example, if you use Bob Wallet, you can enable DNS Servers in the settings, your root server will be `127.0.0.1:5349`. You will need this below.
-
+To manage your hyperzone, install the hyperzone client CLI 
 ```
-git clone https://github.com/lukeburns/hyperzone
-cd hyperzone && npm install
-```
+npm i -g hyperzone
+``` 
 
-Now running
+Then you can run 
 ```
-node bin/recurse 127.0.0.1 5349 127.0.0.1 8888
-```
-will start a recursive resolver running on `127.0.0.1:8888` that intercepts and serves hyperzones.
+hyperzone example.com
+``` 
+to create and manage a zone for `example.com`.
 
-I will add more details here on replicating hyperzones that your resolver can locate soon...
+## Server
+
+If you'd like to resolve hyperzones locally, first install [hipr](https://github.com/lukeburns/hipr) then install the [hipr-hyperzone](https://github.com/lukeburns/hipr-hyperzone) middleware.
