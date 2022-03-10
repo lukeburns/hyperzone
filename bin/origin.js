@@ -21,7 +21,7 @@ async function main() {
   console.log('DS record:', await zone.DS())
   console.log('storage:', storage === ram ? 'in-memory' : storage)
   replicator.add(zone.db.feed, { server: true, client: true })
-  replicator.on('> connection', () => console.log('%'))
+  replicator.on('connection', () => console.log('% connection'))
 
   console.log('---\n')
   zone.db.createReadStream()
