@@ -29,4 +29,19 @@ to create and manage a zone for `example.com`.
 
 ## Server
 
-If you'd like to resolve hyperzones locally, first install [hipr](https://github.com/lukeburns/hipr) then install the [hipr-hyperzone](https://github.com/lukeburns/hipr-hyperzone) middleware.
+If you'd like to resolve hyperzones locally, you can use the [hipr-hyperzone](https://github.com/lukeburns/hipr-hyperzone) middleware for [hipr](https://github.com/lukeburns/hipr).
+
+If you don't have [hipr](https://github.com/lukeburns/hipr) installed, you can install the CLI with
+```
+npm i -g hipr
+```
+then you can install the `hipr-hyperzone` middleware
+```
+hipr install hipr-hyperzone
+```
+and spin up a server
+```
+hipr hipr-hyperzone 127.0.0.1:53 127.0.0.1:5349
+```
+
+This starts a recursive server on port 53 capable of resolving hyperzones using a local hsd authoritative nameserver running on port 5349. You may need to use `sudo` to listen on port 53.
