@@ -26,9 +26,17 @@ async function main() {
   replicator.on('connection', () => console.log('% connection'))
 
   console.log('---\n')
+  let prev = ''
   zone.db.createReadStream()
     .on('data', ({ key, value: record }) => {
-      key === 'ORIGIN' || console.log(record.toString())
+      let curr = key.split('/').slice(0,2).join('/')
+      if (key !== 'ORIGIN') {
+        if (curr !== prev) {
+          prev = curr
+          console.log(curr)
+        }
+        console.log('  ', record.toString())
+      }
     })
     .on('end', () => {
       console.log('---')
