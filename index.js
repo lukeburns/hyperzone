@@ -253,25 +253,33 @@ class Hyperzone extends EventEmitter {
     }
     const zone = new Zone()
     zone.setOrigin(origin || this._origin)
+    const push = data => {
+      try {
+        if (data.value) {
+          const value = data.value.toString()
+          zone.fromString(value)
+        }
+      } catch (err) {}
+    }
     return new Promise((resolve, reject) => {
-      this.db.createReadStream(type)
-        .on('error', reject)
-        .on('data', data => {
-          try {
-            if (data.value) {
-              const value = data.value.toString()
-              zone.fromString(value)
+      // todo: handle referrals better
+      this.db.list('DS', (err, ds) => {
+        ds.map(push)
+        this.db.list('NS', (err, ns) => {
+          ns.map(push)
+          this.db.createReadStream(type)
+          .on('error', reject)
+          .on('data', push)
+          .on('end', _ => {
+            try {
+              const res = zone.resolve(name, types[type])
+              resolve(res)
+            } catch (err) {
+              reject(err)
             }
-          } catch (err) {}
+          })
         })
-        .on('end', _ => {
-          try {
-            const res = zone.resolve(name, types[type])
-            resolve(res)
-          } catch (err) {
-            reject(err)
-          }
-        })
+      })
     })
   }
 
