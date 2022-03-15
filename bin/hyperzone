@@ -18,14 +18,21 @@ async function main() {
   const replicator = new Replicator()
   const zone = new Hyperzone(storage, publicKey, { origin, secretKey })
   await zone.ready()
-  console.log('origin:', await zone.origin())
+
+  const _origin = await zone.origin()
+  console.log('origin:', _origin)
   console.log('public key:', zone.pub)
-  console.log('DS record:', await zone.DS())
   console.log('storage:', storage === ram ? 'in-memory' : storage)
+  console.log('\n---\n')
+  console.log(`; ${_origin.split('.').slice(1).join('.')}\n`)
+  console.log(`${(await zone.DS()).toString()}`)
+  console.log(`${_origin} 86400 IN NS ${zone.pub}.hyperzone.`)
+
   replicator.add(zone.db.feed, { server: true, client: true })
   replicator.on('connection', () => console.log('% connection'))
 
-  console.log('---\n')
+  console.log('\n---\n')
+  console.log(`; ${_origin}`)
   let prev = ''
   zone.db.createReadStream()
     .on('data', ({ key, value: record }) => {
@@ -33,17 +40,21 @@ async function main() {
       if (key !== 'ORIGIN') {
         if (curr !== prev) {
           prev = curr
-          console.log(curr)
+          console.log(`\n; ${curr}\n`)
         }
-        console.log('  ', record.toString())
+        console.log(record.toString())
       }
     })
-    .on('end', () => {
+    .on('end', async () => {
       console.log('---')
       console.log('> put/del:\n')
       process.stdin.on('data', async data => {
         data = data.toString()
-        if (data.slice(0,3) === 'del') {
+        if (data.slice(0,5) === 'query') {
+          const [name, type] = data.slice(5).trim().split(' ')
+          console.log('>', await zone.resolve(util.fqdn(name), type))
+        } else if (data.slice(0,3) === 'del') {
+          if (!data.slice(3).trim()) return
           try {
             const recordSetKey = data.slice(3).trim().toUpperCase()
             const batchDel = await zone.del(recordSetKey)
