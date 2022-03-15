@@ -1,10 +1,10 @@
 {
   "name": "hyperzone",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "",
   "main": "index.js",
   "bin": {
-    "hyperzone": "./bin/origin.js"
+    "hyperzone": "./bin/hyperzone"
   },
   "scripts": {
     "test": "node test.js"
