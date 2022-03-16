@@ -41,7 +41,7 @@ hipr install hipr-hyperzone
 ```
 and spin up a server
 ```
-hipr hipr-hyperzone 127.0.0.1:53 127.0.0.1:5349
+hipr hipr-hyperzone :53 :5349
 ```
 
-This starts a recursive server on port 53 capable of resolving hyperzones using a local hsd authoritative nameserver running on port 5349. You may need to use `sudo` to listen on port 53.
+This starts a recursive server on port 53 capable of resolving hyperzones using a local hsd root nameserver running on port 5349. You may need to use `sudo` to listen on port 53.
