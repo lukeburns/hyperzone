@@ -1,6 +1,6 @@
 {
   "name": "hyperzone",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -9,13 +9,12 @@
   "scripts": {
     "test": "node test.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Luke Burns",
+  "license": "UNLICENSED",
   "dependencies": {
     "@hyperswarm/replicator": "github:lukeburns/replicator",
     "bs32": "^0.1.6",
     "dedent": "^0.7.0",
-    "hipr": "^0.1.1",
     "hypertrie": "^5.1.2",
     "is-options": "^1.0.2",
     "random-access-memory": "^4.0.0"

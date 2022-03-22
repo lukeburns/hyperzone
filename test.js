@@ -1,1 +1,1 @@
-const brittle = require('brittle')
+const brittle = require('brittle');

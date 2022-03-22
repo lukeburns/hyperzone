@@ -1,91 +1,92 @@
 #!/usr/bin/env node
 
-const HOME = require('os').homedir()
+const HOME = require('os').homedir();
 
-const Hyperzone = require('../index')
-const Replicator = require('@hyperswarm/replicator')
-const ram = require('random-access-memory')
-const { util } = require('bns')
+const Hyperzone = require('../index');
+const Replicator = require('@hyperswarm/replicator');
+const ram = require('random-access-memory');
+const { util } = require('bns');
 
-const origin = util.fqdn(((process.argv[2] !== '-ram' && process.argv[2]) ? process.argv[2] : null) || 'example')
-const secretKey = (process.argv[3] && proces.argv[3].length > 4) ? Buffer.from(process.argv[3], 'hex') : undefined
-const publicKey = secretKey ? secretKey.slice(32) : undefined
-const storage = (process.argv[2] === '-ram' || process.argv[3] === '-ram') ? ram : `${HOME}/.hyperzones/w/${origin}`
+const origin = util.fqdn(((process.argv[2] !== '-ram' && process.argv[2]) ? process.argv[2] : null) || 'example');
+const secretKey = (process.argv[3] && proces.argv[3].length > 4) ? Buffer.from(process.argv[3], 'hex') : undefined;
+const publicKey = secretKey ? secretKey.slice(32) : undefined;
+const storage = (process.argv[2] === '-ram' || process.argv[3] === '-ram') ? ram : `${HOME}/.hyperzones/w/${origin}`;
 
-main()
+main();
 
-async function main() {
-  const replicator = new Replicator()
-  const zone = new Hyperzone(storage, publicKey, { origin, secretKey })
-  await zone.ready()
+async function main () {
+  const replicator = new Replicator();
+  const zone = new Hyperzone(storage, publicKey, { origin, secretKey });
+  await zone.ready();
 
-  const _origin = await zone.origin()
-  console.log('origin:', _origin)
-  console.log('public key:', zone.pub)
-  console.log('storage:', storage === ram ? 'in-memory' : storage)
-  console.log('\n---\n')
-  console.log(`; ${_origin.split('.').slice(1).join('.')}\n`)
-  console.log(`${(await zone.DS()).toString()}`)
-  console.log(`${_origin} 86400 IN NS ${zone.pub}.hyperzone.`)
+  const _origin = await zone.origin();
+  console.log('origin:', _origin);
+  console.log('public key (base32):', zone.pub);
+  console.log('public key (hex):', zone.db.key.toString('hex'));
+  console.log('storage:', storage === ram ? 'in-memory' : storage);
+  console.log('\n---\n');
+  console.log(`; ${_origin.split('.').slice(1).join('.')}\n`);
+  console.log(`${(await zone.DS()).toString()}`);
+  console.log(`${_origin} 86400 IN NS ${zone.pub}.hyperzone.`);
 
-  replicator.add(zone.db.feed, { server: true, client: true })
-  replicator.on('connection', () => console.log('% connection'))
+  replicator.add(zone.db.feed, { server: true, client: true });
+  replicator.on('connection', () => console.log('%')); // todo: dont disrupt interactive session
 
-  console.log('\n---\n')
-  console.log(`; ${_origin}`)
-  let prev = ''
+  console.log('\n---\n');
+  console.log(`; ${_origin}`);
+  let prev = '';
   zone.db.createReadStream()
     .on('data', ({ key, value: record }) => {
-      let curr = key.split('/').slice(0,2).join('/')
+      const curr = key.split('/').slice(0, 2).join('/');
       if (key !== 'ORIGIN') {
         if (curr !== prev) {
-          prev = curr
-          console.log(`\n; ${curr}\n`)
+          prev = curr;
+          console.log(`\n; ${curr}\n`);
         }
-        console.log(record.toString())
+        console.log(record.toString());
       }
     })
     .on('end', async () => {
-      console.log('---')
-      console.log('> put/del:\n')
+      console.log('---');
+      console.log('> put/del:\n');
       process.stdin.on('data', async data => {
-        data = data.toString()
-        if (data.slice(0,5) === 'query') {
-          const [name, type] = data.slice(5).trim().split(' ')
-          console.log('>', await zone.resolve(util.fqdn(name), type || 'A'))
-        } else if (data.slice(0,3) === 'del') {
-          if (!data.slice(3).trim()) return
+        data = data.toString();
+        if (data.slice(0, 5) === 'query') {
+          const [name, type] = data.slice(5).trim().split(' ');
+          console.log('>', await zone.resolve(util.fqdn(name), type || 'A'));
+        } else if (data.slice(0, 3) === 'del') {
+          if (!data.slice(3).trim()) return;
           try {
-            const recordSetKey = data.slice(3).trim().toUpperCase()
-            const batchDel = await zone.del(recordSetKey)
-            const delRecords = batchDel.map(({ key }) => key)
-            console.log('> del', recordSetKey, JSON.stringify(delRecords, undefined, 2))
+            const recordSetKey = data.slice(3).trim().toUpperCase();
+            const batchDel = await zone.del(recordSetKey);
+            const delRecords = batchDel.map(({ key }) => key);
+            console.log('> del', recordSetKey, JSON.stringify(delRecords, undefined, 2));
           } catch (error) {
-            console.error('> del ERROR:', error.type)
+            console.error('> del ERROR:', error.type);
           }
-          console.log()
-        } else if (data.slice(0,3) === 'get') {
+          console.log();
+        } else if (data.slice(0, 3) === 'get') {
           try {
-            const key = data.slice(3).trim().toUpperCase()
-            const batchGet = await zone.get(key)
-            const getRecords = batchGet.map(({ key, value }) => ({ key, record: value.toString() }))
-            console.log('> get', key, JSON.stringify(getRecords, undefined, 2))
+            const key = data.slice(3).trim().toUpperCase();
+            const batchGet = await zone.get(key);
+            const getRecords = batchGet.map(({ key, value }) => ({ key, record: value.toString() }));
+            console.log('> get', key, JSON.stringify(getRecords, undefined, 2));
           } catch (error) {
-            console.error('> get ERROR:', error.type)
+            console.error('> get ERROR:', error.type);
           }
-          console.log()
+          console.log();
         } else {
-          const record = data.slice(0,3) === 'put' ? data.slice(3).trim() : data
+          const record = data.slice(0, 3) === 'put' ? data.slice(3).trim() : data;
           try {
-            const recordSetKey = await zone.put(record.trim())
-            const batchPut = await zone.get(recordSetKey)
-            const putRecords = batchPut.map(({ key, value }) => ({ key, record: value.toString() }))
-            console.log('> put', recordSetKey, JSON.stringify(putRecords, undefined, 2))
+            const recordSetKey = await zone.put(record.trim());
+            const batchPut = await zone.get(recordSetKey);
+            const putRecords = batchPut.map(({ key, value }) => ({ key, record: value.toString() }));
+            console.log('> put', recordSetKey, JSON.stringify(putRecords, undefined, 2));
           } catch (error) {
-            console.error('> put ERROR:', error.type)
+            console.error('> put ERROR:', error.type);
           }
-          console.log()
+          console.log();
         }
-      })
-    })
+      });
+    });
 }
