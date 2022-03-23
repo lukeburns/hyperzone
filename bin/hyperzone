@@ -53,7 +53,8 @@ async function main () {
         data = data.toString();
         if (data.slice(0, 5) === 'query') {
           const [name, type] = data.slice(5).trim().split(' ');
-          console.log('>', await zone.resolve(util.fqdn(name), type || 'A'));
+          const res = await zone.resolve(util.fqdn(name), type || 'A');
+          console.log(res.toString());
         } else if (data.slice(0, 3) === 'del') {
           if (!data.slice(3).trim()) return;
           try {
