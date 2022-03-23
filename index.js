@@ -296,12 +296,12 @@ class Hyperzone extends EventEmitter {
       this.db.list('NS', handle);
 
       if (type === 'A') {
-        n += 1;
+        n += 2;
         this.db.list('CNAME', handle);
         this.db.list('AAAA', handle);
       }
       if (type === 'CNAME') {
-        n += 1;
+        n += 2;
         this.db.list('A', handle);
         this.db.list('AAAA', handle);
       }
