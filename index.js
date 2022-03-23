@@ -257,10 +257,6 @@ class Hyperzone extends EventEmitter {
     const zone = new Zone();
     zone.setOrigin(origin || this._origin);
 
-    zone.fromString('localhost. A 127.0.0.1');
-    zone.fromString('*.localhost. A 127.0.0.1');
-    zone.fromString('*.*.localhost. A 127.0.0.1');
-
     const push = data => {
       try {
         if (data.value) {
@@ -302,10 +298,12 @@ class Hyperzone extends EventEmitter {
       if (type === 'A') {
         n += 1;
         this.db.list('CNAME', handle);
+        this.db.list('AAAA', handle);
       }
       if (type === 'CNAME') {
         n += 1;
         this.db.list('A', handle);
+        this.db.list('AAAA', handle);
       }
     });
   }
