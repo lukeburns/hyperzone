@@ -6,7 +6,7 @@ const base32 = require('bs32');
 const { algs } = require('bns/lib/constants');
 const dnssec = require('bns/lib/dnssec');
 const { Zone, wire, util } = require('bns');
-const { types, typesByVal } = wire;
+const { types, typesByVal, codes } = wire;
 
 class Hyperzone extends EventEmitter {
   constructor (storage, key, opts = {}) {
