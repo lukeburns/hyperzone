@@ -275,7 +275,7 @@ class Hyperzone extends EventEmitter {
           try {
             const res = zone.resolve(name, types[type]);
 
-            // why isn't bns Zone resolving CNAMEs for A queries?
+            // https://github.com/chjj/bns/pull/22
             if (types[type] === types.A && res && res.answer && res.answer.length === 0) {
               const r = zone.resolve(name, types.CNAME);
               res.answer.push(...r.answer);
@@ -283,6 +283,11 @@ class Hyperzone extends EventEmitter {
                 res.code = codes.NOERROR;
               }
             }
+
+            if (res.answer.length === 0 && res.authority.length === 0 && res.additional.length === 0) {
+              res.code = codes.NXDOMAIN;
+            }
+
             resolve(res);
           } catch (error) {
             reject(error);
