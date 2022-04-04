@@ -21,17 +21,17 @@ if (process.argv.indexOf('--authoritative')) {
   const storageIndex = process.argv.indexOf('--storage')
   let storage 
   if (storageIndex >= 0) { 
-    storage = process.argv[storageIndex]
+    storage = process.argv[1 + storageIndex]
   } else {
     storage = (process.argv.indexOf('--ram') >= 0) ? ram : `${HOME}/.hyperzones/r/${key}`;
   }
   console.log(`storage: ${storage}`)
 
   const hostnameIndex = process.argv.indexOf('--hostname')
-  const hostname = hostnameIndex >= 0 ? process.argv[hostnameIndex] : '127.0.0.1'
+  const hostname = hostnameIndex >= 0 ? process.argv[1 + hostnameIndex] : '127.0.0.1'
 
   const portIndex = process.argv.indexOf('--port')
-  const port = portIndex >= 0 ? process.argv[portIndex] : 5300
+  const port = portIndex >= 0 ? process.argv[1 + portIndex] : 5300
 
   const server = new AuthServer({
     tcp: true,
@@ -51,7 +51,7 @@ if (process.argv.indexOf('--authoritative')) {
     }
 
     server.bind(port, hostname);
-    console.log(`listening on ${hostname}:${5300}`);
+    console.log(`listening on ${hostname}:${port}`);
   });
 
   
