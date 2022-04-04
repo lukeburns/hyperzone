@@ -2,15 +2,66 @@
 
 const HOME = require('os').homedir();
 
+const AuthServer = require('../auth');
 const Hyperzone = require('../index');
 const Replicator = require('@hyperswarm/replicator');
 const ram = require('random-access-memory');
 const { util } = require('bns');
+const base32 = require('bs32');
 
-const origin = util.fqdn(((process.argv[2] !== '-ram' && process.argv[2]) ? process.argv[2] : null) || 'example');
-const secretKey = (process.argv[3] && proces.argv[3].length > 4) ? Buffer.from(process.argv[3], 'hex') : undefined;
+if (process.argv.indexOf('--authoritative')) {
+  const key = process.argv[2]
+  try {
+    base32.decode(key)
+  } catch (err) {
+    throw new Error('First argument must be a base32 encoded public key')
+  }
+  console.log('public key:', key)
+
+  const storageIndex = process.argv.indexOf('--storage')
+  let storage 
+  if (storageIndex >= 0) { 
+    storage = process.argv[storageIndex]
+  } else {
+    storage = (process.argv.indexOf('--ram') >= 0) ? ram : `${HOME}/.hyperzones/r/${key}`;
+  }
+  console.log(`storage: ${storage}`)
+
+  const hostnameIndex = process.argv.indexOf('--hostname')
+  const hostname = hostnameIndex >= 0 ? process.argv[hostnameIndex] : '127.0.0.1'
+
+  const portIndex = process.argv.indexOf('--port')
+  const port = portIndex >= 0 ? process.argv[portIndex] : 5300
+
+  const server = new AuthServer({
+    tcp: true,
+    edns: true,
+    dnssec: true
+  });
+
+  console.log('searching for zone...')
+  server.setZone(storage, key).then(async (zone) => {
+    const origin = await zone.origin()
+    console.log('found zone:', origin)
+
+    server.on('error', console.error)
+
+    if (process.argv.indexOf('--log') >= 0) {
+      server.on('log', console.log)
+    }
+
+    server.bind(port, hostname);
+    console.log(`listening on ${hostname}:${5300}`);
+  });
+
+  
+  return
+}
+
+const origin = util.fqdn(((process.argv[2] !== '--ram' && process.argv[2]) ? process.argv[2] : null) || 'example');
+const secretKey = (process.argv[3] && process.argv[3].length > 4) ? Buffer.from(process.argv[3], 'hex') : undefined;
 const publicKey = secretKey ? secretKey.slice(32) : undefined;
-const storage = (process.argv[2] === '-ram' || process.argv[3] === '-ram') ? ram : `${HOME}/.hyperzones/w/${origin}`;
+const storage = (process.argv[2] === '--ram' || process.argv[3] === '--ram') ? ram : `${HOME}/.hyperzones/w/${origin}`;
 
 main();
 
