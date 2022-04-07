@@ -9,7 +9,7 @@ const ram = require('random-access-memory');
 const { util } = require('bns');
 const base32 = require('bs32');
 
-if (process.argv.indexOf('--authoritative')) {
+if (process.argv.indexOf('--authoritative') >= 0) {
   const key = process.argv[2]
   try {
     base32.decode(key)
